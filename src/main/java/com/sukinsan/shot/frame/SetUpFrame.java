@@ -150,7 +150,7 @@ public class SetUpFrame extends JFrame implements KeyListener, MouseListener, Na
 
                 @Override
                 public void fail(String res) {
-
+                    toast(res);
                 }
             });
         });
@@ -158,7 +158,7 @@ public class SetUpFrame extends JFrame implements KeyListener, MouseListener, Na
 
     @Override // input into text field host
     public void keyReleased(KeyEvent e) {
-        String[] schemes = {"http", "https"}; // DEFAULT schemes = "http", "https", "ftp"
+        String[] schemes = {"http", "https"};
         UrlValidator urlValidator = new UrlValidator(schemes);
         if (urlValidator.isValid(hostJtext.getText())) {
             settingsUtil.setHost(hostJtext.getText());
@@ -169,6 +169,33 @@ public class SetUpFrame extends JFrame implements KeyListener, MouseListener, Na
     public void mousePressed(MouseEvent e) {
         if (e.getButton() == MouseEvent.BUTTON1) {
             runCropping();
+        }
+    }
+
+    long altClicked = 0;
+    long doubleALtInterval = 300;
+    boolean ctrlPressed = false;
+
+    @Override
+    public void nativeKeyPressed(NativeKeyEvent nativeKeyEvent) {
+        if (NativeKeyEvent.VC_CONTROL == nativeKeyEvent.getKeyCode()) {
+            ctrlPressed = true;
+        }
+    }
+
+    @Override
+    public void nativeKeyReleased(NativeKeyEvent nativeKeyEvent) {
+        if (NativeKeyEvent.VC_CONTROL == nativeKeyEvent.getKeyCode()) {
+            ctrlPressed = false;
+        }
+
+        if (ctrlPressed && NativeKeyEvent.VC_ALT == nativeKeyEvent.getKeyCode()) {
+            if ((altClicked + doubleALtInterval) > System.currentTimeMillis()) {
+                runCropping();
+            } else {
+                altClicked = System.currentTimeMillis();
+            }
+
         }
     }
 
@@ -202,36 +229,8 @@ public class SetUpFrame extends JFrame implements KeyListener, MouseListener, Na
 
     }
 
-
     @Override
     public void nativeKeyTyped(NativeKeyEvent nativeKeyEvent) {
 
-    }
-
-    long altClicked = 0;
-    long doubleALtInterval = 300;
-    boolean ctrlPressed = false;
-
-    @Override
-    public void nativeKeyPressed(NativeKeyEvent nativeKeyEvent) {
-        if (NativeKeyEvent.VC_CONTROL == nativeKeyEvent.getKeyCode()) {
-            ctrlPressed = true;
-        }
-    }
-
-    @Override
-    public void nativeKeyReleased(NativeKeyEvent nativeKeyEvent) {
-        if (NativeKeyEvent.VC_CONTROL == nativeKeyEvent.getKeyCode()) {
-            ctrlPressed = false;
-        }
-
-        if (ctrlPressed && NativeKeyEvent.VC_ALT == nativeKeyEvent.getKeyCode()) {
-            if ((altClicked + doubleALtInterval) > System.currentTimeMillis()) {
-                runCropping();
-            } else {
-                altClicked = System.currentTimeMillis();
-            }
-
-        }
     }
 }
