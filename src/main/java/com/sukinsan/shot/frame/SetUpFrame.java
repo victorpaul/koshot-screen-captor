@@ -16,7 +16,6 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
 import java.io.File;
-import java.lang.annotation.Native;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
