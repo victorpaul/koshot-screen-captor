@@ -13,6 +13,7 @@ public class SettingsUtilImpl implements SettingsUtil {
             HOME_FOLDER_NAME = "koshot",
             PROPERTY_HOST = "host",
             PROPERTY_HOT_KEY_RUN = "hotKEyRun",
+            PROPERTY_NOTIFICATIONS = "notifications",
             SETTINGS_FILE_NAME = "settings.properties";
 
     private Properties props;
@@ -80,5 +81,16 @@ public class SettingsUtilImpl implements SettingsUtil {
     public void setHotKeyCrop(boolean selected) {
         props.setProperty(PROPERTY_HOT_KEY_RUN, String.valueOf(selected));
         save(props);
+    }
+
+    @Override
+    public void setSHowNotifications(boolean selected) {
+        props.setProperty(PROPERTY_NOTIFICATIONS, String.valueOf(selected));
+        save(props);
+    }
+
+    @Override
+    public boolean getSHowNotifications() {
+        return Boolean.valueOf(props.getProperty(PROPERTY_NOTIFICATIONS, "true"));
     }
 }

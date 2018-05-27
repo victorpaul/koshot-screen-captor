@@ -8,4 +8,9 @@ public interface SettingsUtil {
     boolean getHotKeyCrop();
 
     void setHotKeyCrop(boolean selected);
+
+    void setSHowNotifications(boolean selected);
+
+    boolean getSHowNotifications();
+
 }

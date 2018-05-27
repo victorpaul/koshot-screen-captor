@@ -9,8 +9,6 @@ import org.jnativehook.keyboard.NativeKeyEvent;
 import org.jnativehook.keyboard.NativeKeyListener;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -19,16 +17,23 @@ import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class SetUpFrame extends JFrame implements KeyListener, MouseListener, ChangeListener, NativeKeyListener {
+public class SetUpFrame extends JFrame implements KeyListener, MouseListener, NativeKeyListener {
     private CropUtil cropUtil;
     private PubishUtil pubishUtil;
     private SettingsUtil settingsUtil;
     private Api api;
 
     private CropDesktopFrame frame;
-
+    private TrayIcon trayIcon;
     private JTextField hostJtext;
-    private JCheckBox checkBoxHotKey;
+    private JCheckBox checkBoxHotKey, checkboxNotification;
+
+    private void toast(String message) {
+        System.out.println("message " + message);
+        if (settingsUtil.getSHowNotifications()) {
+            trayIcon.displayMessage("koshot", message, TrayIcon.MessageType.NONE);
+        }
+    }
 
     public SetUpFrame() throws HeadlessException {
         Logger logger = Logger.getLogger(GlobalScreen.class.getPackage().getName());
@@ -57,15 +62,25 @@ public class SetUpFrame extends JFrame implements KeyListener, MouseListener, Ch
         hostJtext.setText(settingsUtil.getHost());
         hostJtext.setFont(new Font("Arial", Font.PLAIN, 40));
         hostJtext.addKeyListener(this);
+
         checkBoxHotKey = new JCheckBox();
         checkBoxHotKey.setText("Crop with Alt+Alt");
         checkBoxHotKey.setSelected(settingsUtil.getHotKeyCrop());
-        checkBoxHotKey.addChangeListener(this);
+        checkBoxHotKey.addChangeListener(e -> {
+            setUpHotKeyCrop(checkBoxHotKey.isSelected());
+            settingsUtil.setHotKeyCrop(checkBoxHotKey.isSelected());
+        });
+
+        checkboxNotification = new JCheckBox();
+        checkboxNotification.setText("Show publish notification");
+        checkboxNotification.setSelected(settingsUtil.getSHowNotifications());
+        checkboxNotification.addChangeListener(e -> settingsUtil.setSHowNotifications(checkboxNotification.isSelected()));
 
         Container pane = getContentPane();
         pane.setLayout(new FlowLayout());
         pane.add(hostJtext);
         pane.add(checkBoxHotKey);
+        pane.add(checkboxNotification);
         pane.add(launchButton);
 
         setUpHotKeyCrop(settingsUtil.getHotKeyCrop());
@@ -99,10 +114,12 @@ public class SetUpFrame extends JFrame implements KeyListener, MouseListener, Ch
             setUpItem.addActionListener(e -> setVisible(true));
             exitItem.addActionListener(e -> System.exit(0));
 
-            TrayIcon trayIcon = new TrayIcon(Toolkit.getDefaultToolkit().getImage(getClass().getClassLoader().getResource("tray.png")));
+            trayIcon = new TrayIcon(Toolkit.getDefaultToolkit().getImage(getClass().getClassLoader().getResource("tray.png")));
             trayIcon.addMouseListener(this);
             trayIcon.setPopupMenu(popup);
             SystemTray tray = SystemTray.getSystemTray();
+            trayIcon.setImageAutoSize(true);
+            trayIcon.setToolTip("koshot");
             try {
                 tray.add(trayIcon);
             } catch (AWTException e) {
@@ -127,6 +144,7 @@ public class SetUpFrame extends JFrame implements KeyListener, MouseListener, Ch
             pubishUtil.publish(file, new PubishUtil.OnPubish() {
                 @Override
                 public void success(String res) {
+                    toast("Url is in your clipboard!");
                     setClipboard(res);
                 }
 
@@ -152,12 +170,6 @@ public class SetUpFrame extends JFrame implements KeyListener, MouseListener, Ch
         if (e.getButton() == MouseEvent.BUTTON1) {
             runCropping();
         }
-    }
-
-    @Override // enable crop by hotkey
-    public void stateChanged(ChangeEvent e) {
-        setUpHotKeyCrop(checkBoxHotKey.isSelected());
-        settingsUtil.setHotKeyCrop(checkBoxHotKey.isSelected());
     }
 
     @Override
@@ -216,7 +228,6 @@ public class SetUpFrame extends JFrame implements KeyListener, MouseListener, Ch
         if (ctrlPressed && NativeKeyEvent.VC_ALT == nativeKeyEvent.getKeyCode()) {
             if ((altClicked + doubleALtInterval) > System.currentTimeMillis()) {
                 runCropping();
-                System.out.println("Doubleclick");
             } else {
                 altClicked = System.currentTimeMillis();
             }
