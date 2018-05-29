@@ -9,11 +9,14 @@ import org.jnativehook.keyboard.NativeKeyEvent;
 import org.jnativehook.keyboard.NativeKeyListener;
 
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -23,7 +26,7 @@ public class SetUpFrame extends JFrame implements KeyListener, MouseListener, Na
     private SettingsUtil settingsUtil;
     private Api api;
 
-    private CropDesktopFrame frame;
+    private List<CropDesktopFrame> cropFrames = new ArrayList<>();
     private TrayIcon trayIcon;
     private JTextField hostJtext;
     private JCheckBox checkBoxHotKey, checkboxNotification;
@@ -31,7 +34,11 @@ public class SetUpFrame extends JFrame implements KeyListener, MouseListener, Na
     private void toast(String message) {
         System.out.println("message " + message);
         if (settingsUtil.getSHowNotifications()) {
-            trayIcon.displayMessage("koshot", message, TrayIcon.MessageType.NONE);
+            try {
+                trayIcon.displayMessage("koshot", message, TrayIcon.MessageType.NONE);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         }
     }
 
@@ -40,7 +47,8 @@ public class SetUpFrame extends JFrame implements KeyListener, MouseListener, Na
         logger.setLevel(Level.WARNING);
         logger.setUseParentHandlers(false);
 
-        setDefaultCloseOperation(JFrame.ICONIFIED);
+        //setDefaultCloseOperation(JFrame.ICONIFIED);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         settingsUtil = new SettingsUtilImpl();
         api = new Api(settingsUtil.getHost());
@@ -134,26 +142,38 @@ public class SetUpFrame extends JFrame implements KeyListener, MouseListener, Na
         clipboard.setContents(stringSelection, null);
     }
 
-    void runCropping() {
-        if (frame != null) {
-            frame.dispose();
+    private void disposeAllCropFrames() {
+        for (CropDesktopFrame cdf : cropFrames) {
+            cdf.dispose();
         }
-        frame = new CropDesktopFrame((x, y, width, height) -> {
-            File file = cropUtil.crop(x, y, width, height);
-            setClipboard("Cropping is publishing");
-            pubishUtil.publish(file, new PubishUtil.OnPubish() {
-                @Override
-                public void success(String res) {
-                    toast("Url is in your clipboard!");
-                    setClipboard(res);
-                }
+        cropFrames.clear();
+    }
 
-                @Override
-                public void fail(String res) {
-                    toast(res);
-                }
+    void runCropping() {
+        disposeAllCropFrames();
+
+        // run frame per monitor
+        GraphicsDevice[] gs = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices();
+        for (GraphicsDevice gd : gs) {
+            CropDesktopFrame cdf = new CropDesktopFrame(gd, (x, y, width, height) -> {
+                disposeAllCropFrames();
+                File file = cropUtil.crop(x, y, width, height);
+                setClipboard("Cropping is publishing");
+                pubishUtil.publish(file, new PubishUtil.OnPubish() {
+                    @Override
+                    public void success(String res) {
+                        toast("Url is in your clipboard!");
+                        setClipboard(res);
+                    }
+
+                    @Override
+                    public void fail(String res) {
+                        toast(res);
+                    }
+                });
             });
-        });
+            cropFrames.add(cdf);
+        }
     }
 
     @Override // input into text field host

@@ -1,6 +1,7 @@
 package com.sukinsan.shot.frame;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.*;
 
@@ -11,7 +12,7 @@ public class CropDesktopFrame extends JFrame implements KeyListener, MouseListen
     }
 
     private OnCropArea onCrop;
-    private JPanel cropPanel;
+    private JLabel cropPanel;
     private boolean startCrop = false;
     private int mouseStartX = 0;
     private int mouseStartY = 0;
@@ -21,30 +22,42 @@ public class CropDesktopFrame extends JFrame implements KeyListener, MouseListen
     private int cropWidth = 0;
     private int cropHeight = 0;
 
-    public CropDesktopFrame(OnCropArea onCrop) throws HeadlessException {
+    public CropDesktopFrame(GraphicsDevice gd, OnCropArea onCrop) throws HeadlessException {
+        super(gd.getDefaultConfiguration());
         this.onCrop = onCrop;
-        cropPanel = new JPanel();
-        cropPanel.setBackground(Color.BLACK);
+        cropPanel = new JLabel();
+        Border border = BorderFactory.createLineBorder(new Color(0f,0f,0f,0.7f), 1);
+        cropPanel.setBorder(border);
 
         addKeyListener(this);
         addMouseListener(this);
         addMouseMotionListener(this);
-        setFullScreen();
+        captureScreenAndEnterFullScreenMode(gd);
         setVisible(true);
     }
 
-    private void setFullScreen() {
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        setBounds(0, 0, screenSize.width, screenSize.height);
-        setState(Frame.MAXIMIZED_BOTH);
-        setUndecorated(true);
-        setOpacity(0.25f);
+    private void captureScreenAndEnterFullScreenMode(GraphicsDevice gd) {
+        Rectangle rc = gd.getDefaultConfiguration().getBounds();
+        JLabel jLabel = null;
+        try {
+            jLabel = new JLabel(new ImageIcon(new Robot().createScreenCapture(rc)));
+        } catch (AWTException e) {
+            e.printStackTrace();
+        }
+
+        jLabel.setBounds(rc);
+        setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
+        add(jLabel);
+        setComponentZOrder(jLabel, 1);
         setAlwaysOnTop(true);
+        gd.setFullScreenWindow(this);
     }
+
 
     @Override
     public void mousePressed(MouseEvent e) {
         add(cropPanel);
+        setComponentZOrder(cropPanel, 0);
         startCrop = true;
         mouseStartX = e.getX();
         mouseStartY = e.getY();
@@ -53,10 +66,11 @@ public class CropDesktopFrame extends JFrame implements KeyListener, MouseListen
     @Override
     public void mouseReleased(MouseEvent e) {
         startCrop = false;
-        remove(cropPanel);
-        dispose();
-        if (cropWidth > 0 && cropHeight > 0) {
-            onCrop.OnCropArea(cropStartX, cropStartY, cropWidth, cropHeight);
+        int relatedX = getGraphicsConfiguration().getBounds().x;
+        int relatedY = getGraphicsConfiguration().getBounds().y;
+
+        if (onCrop != null && cropWidth > 0 && cropHeight > 0) {
+            onCrop.OnCropArea(cropPanel.getX()+relatedX, cropPanel.getY()+relatedY, cropPanel.getWidth(), cropPanel.getHeight());
         }
     }
 
@@ -68,17 +82,18 @@ public class CropDesktopFrame extends JFrame implements KeyListener, MouseListen
                 cropWidth = e.getX() - cropStartX;
             } else {
                 cropStartX = e.getX();
-                cropWidth = mouseStartX - cropStartX;
+                cropWidth = mouseStartX - e.getX();
             }
             if (e.getY() > mouseStartY) {
                 cropStartY = mouseStartY;
                 cropHeight = e.getY() - cropStartY;
             } else {
                 cropStartY = e.getY();
-                cropHeight = mouseStartY - cropStartY;
+                cropHeight = mouseStartY - e.getY();
             }
 
             cropPanel.setBounds(cropStartX, cropStartY, cropWidth, cropHeight);
+            //cropPanel.repaint();
         }
     }
 

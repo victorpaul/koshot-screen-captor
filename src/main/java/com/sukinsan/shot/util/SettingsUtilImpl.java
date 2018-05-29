@@ -9,7 +9,7 @@ import java.util.Properties;
 public class SettingsUtilImpl implements SettingsUtil {
 
     private final static String
-            DEFAULT_HOST = "http://127.0.0.1:8080/",
+            DEFAULT_HOST = "http://paul.ekreative.com/",
             HOME_FOLDER_NAME = "koshot",
             PROPERTY_HOST = "host",
             PROPERTY_HOT_KEY_RUN = "hotKEyRun",

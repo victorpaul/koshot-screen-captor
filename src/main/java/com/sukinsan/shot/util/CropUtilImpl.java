@@ -14,7 +14,10 @@ public class CropUtilImpl implements CropUtil {
         try {
             Robot robot = new Robot();
             BufferedImage bi = robot.createScreenCapture(new Rectangle(x, y, width, height));
-            File outputfile = Files.createTempFile("kosh", "shot").toFile();
+
+            String fileanme = System.currentTimeMillis() + "_" + Files.createTempFile("kosh", "shot").toFile().getName() + ".jpg";
+            File outputfile = new File(getUploadFolder(), fileanme);
+
             if (!outputfile.exists()) {
                 outputfile.createNewFile();
             }
@@ -27,6 +30,14 @@ public class CropUtilImpl implements CropUtil {
             e.printStackTrace();
         }
         return null;
+    }
+
+    private File getUploadFolder() {
+        File uploadFOlder = new File(System.getProperty("user.home"), "koshot/myUploads");
+        if (!uploadFOlder.exists()) {
+            uploadFOlder.mkdirs();
+        }
+        return uploadFOlder;
     }
 
 }
