@@ -63,7 +63,10 @@ public class SetUpFrame extends JFrame implements KeyListener, MouseListener, Na
     private void setUpUi() {
         JButton launchButton = new JButton();
         launchButton.setText("Crop");
-        launchButton.addActionListener(e -> runCropping());
+        launchButton.addActionListener(e -> {
+            System.out.println("runCropping() button");
+            runCropping();
+        });
         launchButton.setFont(new Font("Arial", Font.PLAIN, 40));
 
         hostJtext = new JTextField();
@@ -154,6 +157,7 @@ public class SetUpFrame extends JFrame implements KeyListener, MouseListener, Na
 
         // run frame per monitor
         GraphicsDevice[] gs = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices();
+        System.out.println("gs.len=" + gs.length);
         for (GraphicsDevice gd : gs) {
             CropDesktopFrame cdf = new CropDesktopFrame(gd, (x, y, width, height) -> {
                 disposeAllCropFrames();
@@ -188,6 +192,7 @@ public class SetUpFrame extends JFrame implements KeyListener, MouseListener, Na
     @Override // click on tray
     public void mousePressed(MouseEvent e) {
         if (e.getButton() == MouseEvent.BUTTON1) {
+            System.out.println("runCropping() tray");
             runCropping();
         }
     }
@@ -211,6 +216,7 @@ public class SetUpFrame extends JFrame implements KeyListener, MouseListener, Na
 
         if (ctrlPressed && NativeKeyEvent.VC_ALT == nativeKeyEvent.getKeyCode()) {
             if ((altClicked + doubleALtInterval) > System.currentTimeMillis()) {
+                System.out.println("runCropping() native");
                 runCropping();
             } else {
                 altClicked = System.currentTimeMillis();
