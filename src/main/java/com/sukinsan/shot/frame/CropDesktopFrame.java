@@ -1,7 +1,6 @@
 package com.sukinsan.shot.frame;
 
 import com.sukinsan.shot.util.SystemUtils;
-import sun.plugin2.util.SystemUtil;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -10,11 +9,13 @@ import java.awt.event.*;
 
 public class CropDesktopFrame extends JFrame implements KeyListener, MouseListener, MouseMotionListener {
 
-    public interface OnCropArea {
+    public interface OnAction {
+        void OnCancel();
+
         void OnCropArea(int x, int y, int width, int height);
     }
 
-    private OnCropArea onCrop;
+    private OnAction onCrop;
     private JLabel cropPanel;
     private boolean startCrop = false;
     private int mouseStartX = 0;
@@ -25,7 +26,7 @@ public class CropDesktopFrame extends JFrame implements KeyListener, MouseListen
     private int cropWidth = 0;
     private int cropHeight = 0;
 
-    public CropDesktopFrame(GraphicsDevice gd, OnCropArea onCrop) throws HeadlessException {
+    public CropDesktopFrame(GraphicsDevice gd, OnAction onCrop) throws HeadlessException {
         super(gd.getDefaultConfiguration());
         this.onCrop = onCrop;
         cropPanel = new JLabel();
@@ -54,7 +55,7 @@ public class CropDesktopFrame extends JFrame implements KeyListener, MouseListen
         setComponentZOrder(jLabel, 1);
         setAlwaysOnTop(true);
 
-        setUndecorated(true);
+        setUndecorated(true); // dis one is important!! Crop by Y will be wrong with top window panel
         if (SystemUtils.isWindows()) {
             setBounds(rc);
         } else {
@@ -110,12 +111,16 @@ public class CropDesktopFrame extends JFrame implements KeyListener, MouseListen
 
     @Override
     public void keyTyped(KeyEvent e) {
-        dispose();
+        if (onCrop != null) {
+            onCrop.OnCancel();
+        }
     }
 
     @Override
     public void keyPressed(KeyEvent e) {
-        dispose();
+        if (onCrop != null) {
+            onCrop.OnCancel();
+        }
     }
 
     @Override

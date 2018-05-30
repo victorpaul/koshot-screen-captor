@@ -153,28 +153,38 @@ public class SetUpFrame extends JFrame implements KeyListener, MouseListener, Na
     }
 
     void runCropping() {
-        disposeAllCropFrames();
+        if (!cropFrames.isEmpty()) {
+            System.out.println("NO");
+            return;
+        }
 
         // run frame per monitor
         GraphicsDevice[] gs = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices();
-        System.out.println("gs.len=" + gs.length);
         for (GraphicsDevice gd : gs) {
-            CropDesktopFrame cdf = new CropDesktopFrame(gd, (x, y, width, height) -> {
-                disposeAllCropFrames();
-                File file = cropUtil.crop(x, y, width, height);
-                setClipboard("Cropping is publishing");
-                pubishUtil.publish(file, new PubishUtil.OnPubish() {
-                    @Override
-                    public void success(String res) {
-                        toast("Url is in your clipboard!");
-                        setClipboard(res);
-                    }
+            CropDesktopFrame cdf = new CropDesktopFrame(gd, new CropDesktopFrame.OnAction() {
+                @Override
+                public void OnCancel() {
+                    disposeAllCropFrames();
+                }
 
-                    @Override
-                    public void fail(String res) {
-                        toast(res);
-                    }
-                });
+                @Override
+                public void OnCropArea(int x, int y, int width, int height) {
+                    disposeAllCropFrames();
+                    File file = cropUtil.crop(x, y, width, height);
+                    setClipboard("Cropping is publishing");
+                    pubishUtil.publish(file, new PubishUtil.OnPubish() {
+                        @Override
+                        public void success(String res) {
+                            toast("Url is in your clipboard!");
+                            setClipboard(res);
+                        }
+
+                        @Override
+                        public void fail(String res) {
+                            toast(res);
+                        }
+                    });
+                }
             });
             cropFrames.add(cdf);
         }
