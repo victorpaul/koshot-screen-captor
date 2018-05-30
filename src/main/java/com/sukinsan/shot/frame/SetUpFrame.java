@@ -169,8 +169,8 @@ public class SetUpFrame extends JFrame implements KeyListener, MouseListener, Na
 
                 @Override
                 public void OnCropArea(int x, int y, int width, int height) {
-                    disposeAllCropFrames();
                     File file = cropUtil.crop(x, y, width, height);
+                    disposeAllCropFrames();
                     setClipboard("Cropping is publishing");
                     pubishUtil.publish(file, new PubishUtil.OnPubish() {
                         @Override
