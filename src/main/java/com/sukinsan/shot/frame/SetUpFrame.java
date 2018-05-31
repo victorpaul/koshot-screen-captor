@@ -175,7 +175,7 @@ public class SetUpFrame extends JFrame implements KeyListener, NativeKeyListener
                     //File file = cropUtil.crop(x, y, width, height);
                     disposeAllCropFrames();
 
-                    new DrawFrame(rt, bi, gd, pubishUtil, bi1 -> {
+                    new DrawFrame(rt, bi, gd, bi1 -> {
                         setClipboard("Cropped image is publishing");
                         File file = cropUtil.save(bi1);
                         pubishUtil.publish(file, new PubishUtil.OnPubish() {

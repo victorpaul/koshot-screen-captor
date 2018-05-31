@@ -4,35 +4,50 @@ import com.sukinsan.shot.util.PubishUtil;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
 
-public class DrawFrame extends JFrame implements MouseListener, MouseMotionListener {
+public class DrawFrame extends JFrame implements MouseListener, MouseMotionListener, KeyListener {
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        System.out.println("e" + e.getKeyCode());
+        if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+            dispose();
+        }
+        if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+            submit();
+        }
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+    }
 
     public interface OnReady {
         void OnReady(BufferedImage bi);
     }
 
     private JLabel editImage;
-    private PubishUtil pubishUtil;
     private OnReady or;
-    private BufferedImage editBUfferIMage;
+    private BufferedImage editBufferIMage;
+    private Graphics2D editGraphics;
     private boolean mouseIn = true;
     private boolean drawMode = false;
     private int mouseX, mouseY;
 
-    public DrawFrame(Rectangle rt, BufferedImage bi, GraphicsDevice gd, PubishUtil pubishUtil, OnReady or) {
+    public DrawFrame(Rectangle rt, BufferedImage bi, GraphicsDevice gd, OnReady or) {
         super(gd.getDefaultConfiguration());
-        this.pubishUtil = pubishUtil;
         this.or = or;
 
         drawUI(rt, bi);
-        editBUfferIMage.getGraphics().setPaintMode();
-        editBUfferIMage.getGraphics().drawLine(0, 0, 100, 100);
+
     }
 
     public static BufferedImage deepCopy(BufferedImage bi) {
@@ -42,11 +57,20 @@ public class DrawFrame extends JFrame implements MouseListener, MouseMotionListe
         return new BufferedImage(cm, raster, isAlphaPremultiplied, null);
     }
 
+    private void submit() {
+        if (isDisplayable()) {
+            dispose();
+            or.OnReady(editBufferIMage);
+        }
+    }
+
     private void drawUI(Rectangle rt, BufferedImage bi) {
         setLocation(rt.x, rt.y);
 
-        editBUfferIMage = deepCopy(bi);
-        editImage = new JLabel(new ImageIcon(editBUfferIMage));
+        editBufferIMage = deepCopy(bi);
+        editGraphics = editBufferIMage.createGraphics();
+
+        editImage = new JLabel(new ImageIcon(editBufferIMage));
         editImage.setBorder(BorderFactory.createLineBorder(new Color(0f, 0f, 0f, 1f), 3));
         editImage.setBounds(rt);
         editImage.addMouseListener(this);
@@ -58,16 +82,16 @@ public class DrawFrame extends JFrame implements MouseListener, MouseMotionListe
         JButton doneBtn = new JButton();
         doneBtn.setText("Done");
         doneBtn.addActionListener(e -> {
-            dispose();
-            or.OnReady(editBUfferIMage);
+            submit();
         });
         doneBtn.setFont(new Font("Arial", Font.PLAIN, 40));
 
         JButton cleanBtn = new JButton();
         cleanBtn.setText("Clean");
         cleanBtn.addActionListener(e -> {
-            editBUfferIMage = deepCopy(bi);
-            editImage.setIcon(new ImageIcon(editBUfferIMage));
+            editBufferIMage = deepCopy(bi);
+            editGraphics = editBufferIMage.createGraphics();
+            editImage.setIcon(new ImageIcon(editBufferIMage));
         });
         cleanBtn.setFont(new Font("Arial", Font.PLAIN, 40));
 
@@ -87,14 +111,35 @@ public class DrawFrame extends JFrame implements MouseListener, MouseMotionListe
         bottomPanel.add(doneBtn);
         bottomPanel.add(cleanBtn);
         bottomPanel.add(closeBtn);
+
+        addKeyListener(this);
+        editImage.addKeyListener(this);
+        bottomPanel.addKeyListener(this);
+        doneBtn.addKeyListener(this);
+        cleanBtn.addKeyListener(this);
+        closeBtn.addKeyListener(this);
+
         pack();
         setVisible(true);
     }
 
+    private int color = 0;
+
     @Override
     public void mouseDragged(MouseEvent e) {
         if (drawMode && mouseIn) {
-            editBUfferIMage.getGraphics().drawLine(mouseX, mouseY, e.getX(), e.getY());
+
+            if (color > 255) {
+                color = 0;
+            }
+
+            editGraphics.setColor(new Color(0, 0, 0));
+            editGraphics.drawLine(mouseX, mouseY, e.getX(), e.getY());
+            editGraphics.setColor(new Color(255, color, 1));
+            editGraphics.drawLine(mouseX, mouseY, e.getX() + 2, e.getY() + 2);
+
+            color += 5;
+
             editImage.repaint();
             mouseX = e.getX();
             mouseY = e.getY();
