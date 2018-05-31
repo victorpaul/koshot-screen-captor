@@ -176,7 +176,7 @@ public class SetUpFrame extends JFrame implements KeyListener, NativeKeyListener
                     disposeAllCropFrames();
 
                     new DrawFrame(rt, bi, gd, pubishUtil, bi1 -> {
-                        setClipboard("Cropped omage is publishing");
+                        setClipboard("Cropped image is publishing");
                         File file = cropUtil.save(bi1);
                         pubishUtil.publish(file, new PubishUtil.OnPubish() {
                             @Override
