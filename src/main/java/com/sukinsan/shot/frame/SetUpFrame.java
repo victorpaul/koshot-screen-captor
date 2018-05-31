@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class SetUpFrame extends JFrame implements KeyListener, MouseListener, NativeKeyListener {
+public class SetUpFrame extends JFrame implements KeyListener, NativeKeyListener {
     private CropUtil cropUtil;
     private PubishUtil pubishUtil;
     private SettingsUtil settingsUtil;
@@ -75,7 +75,7 @@ public class SetUpFrame extends JFrame implements KeyListener, MouseListener, Na
         hostJtext.addKeyListener(this);
 
         checkBoxHotKey = new JCheckBox();
-        checkBoxHotKey.setText("Crop with Alt+Alt");
+        checkBoxHotKey.setText("Crop by holding Ctrl and Alt-Alt twice");
         checkBoxHotKey.setSelected(settingsUtil.getHotKeyCrop());
         checkBoxHotKey.addChangeListener(e -> {
             setUpHotKeyCrop(checkBoxHotKey.isSelected());
@@ -118,15 +118,17 @@ public class SetUpFrame extends JFrame implements KeyListener, MouseListener, Na
 
             PopupMenu popup = new PopupMenu();
             MenuItem setUpItem = new MenuItem("Settings");
+            MenuItem cropItem = new MenuItem("Crop");
             MenuItem exitItem = new MenuItem("Exit");
             popup.add(setUpItem);
+            popup.add(cropItem);
             popup.add(exitItem);
 
             setUpItem.addActionListener(e -> setVisible(true));
+            cropItem.addActionListener(e-> runCropping());
             exitItem.addActionListener(e -> System.exit(0));
 
             trayIcon = new TrayIcon(Toolkit.getDefaultToolkit().getImage(getClass().getClassLoader().getResource("tray.png")));
-            trayIcon.addMouseListener(this);
             trayIcon.setPopupMenu(popup);
             SystemTray tray = SystemTray.getSystemTray();
             trayIcon.setImageAutoSize(true);
@@ -199,14 +201,6 @@ public class SetUpFrame extends JFrame implements KeyListener, MouseListener, Na
         }
     }
 
-    @Override // click on tray
-    public void mousePressed(MouseEvent e) {
-        if (e.getButton() == MouseEvent.BUTTON1) {
-            System.out.println("runCropping() tray");
-            runCropping();
-        }
-    }
-
     long altClicked = 0;
     long doubleALtInterval = 300;
     boolean ctrlPressed = false;
@@ -242,26 +236,6 @@ public class SetUpFrame extends JFrame implements KeyListener, MouseListener, Na
 
     @Override
     public void keyPressed(KeyEvent e) {
-
-    }
-
-    @Override
-    public void mouseClicked(MouseEvent e) {
-
-    }
-
-    @Override
-    public void mouseReleased(MouseEvent e) {
-
-    }
-
-    @Override
-    public void mouseEntered(MouseEvent e) {
-
-    }
-
-    @Override
-    public void mouseExited(MouseEvent e) {
 
     }
 

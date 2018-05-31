@@ -53,8 +53,8 @@ public class CropDesktopFrame extends JFrame implements KeyListener, MouseListen
         setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
         add(jLabel);
         setComponentZOrder(jLabel, 1);
-        setAlwaysOnTop(true);
 
+        setAlwaysOnTop(true);
         setUndecorated(true); // dis one is important!! Crop by Y will be wrong with top window panel
         if (SystemUtils.isWindows()) {
             setBounds(rc);
