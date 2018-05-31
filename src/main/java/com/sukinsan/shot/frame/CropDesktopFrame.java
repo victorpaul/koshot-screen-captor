@@ -6,15 +6,17 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
 
 public class CropDesktopFrame extends JFrame implements KeyListener, MouseListener, MouseMotionListener {
 
     public interface OnAction {
         void OnCancel();
 
-        void OnCropArea(int x, int y, int width, int height);
+        void OnCropArea(BufferedImage bi, Rectangle rt);
     }
 
+    private BufferedImage desktopBufferedImage;
     private OnAction onCrop;
     private JLabel cropPanel;
     private boolean startCrop = false;
@@ -44,7 +46,8 @@ public class CropDesktopFrame extends JFrame implements KeyListener, MouseListen
         Rectangle rc = gd.getDefaultConfiguration().getBounds();
         JLabel jLabel = null;
         try {
-            jLabel = new JLabel(new ImageIcon(new Robot().createScreenCapture(rc)));
+            desktopBufferedImage = new Robot().createScreenCapture(rc);
+            jLabel = new JLabel(new ImageIcon(desktopBufferedImage));
         } catch (AWTException e) {
             e.printStackTrace();
         }
@@ -82,7 +85,8 @@ public class CropDesktopFrame extends JFrame implements KeyListener, MouseListen
         int relatedY = getGraphicsConfiguration().getBounds().y;
 
         if (onCrop != null && cropWidth > 0 && cropHeight > 0) {
-            onCrop.OnCropArea(cropPanel.getX() + relatedX, cropPanel.getY() + relatedY, cropPanel.getWidth(), cropPanel.getHeight());
+            BufferedImage subImage = desktopBufferedImage.getSubimage(cropPanel.getX(), cropPanel.getY(), cropPanel.getWidth(), cropPanel.getHeight());
+            onCrop.OnCropArea(subImage, new Rectangle(cropPanel.getX() + relatedX, cropPanel.getY() + relatedY, cropPanel.getWidth(), cropPanel.getHeight()));
         }
     }
 

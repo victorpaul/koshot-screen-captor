@@ -10,11 +10,8 @@ import java.nio.file.Files;
 public class CropUtilImpl implements CropUtil {
 
     @Override
-    public File crop(int x, int y, int width, int height) {
+    public File save(BufferedImage bi) {
         try {
-            Robot robot = new Robot();
-            BufferedImage bi = robot.createScreenCapture(new Rectangle(x, y, width, height));
-
             String fileanme = System.currentTimeMillis() + "_" + Files.createTempFile("kosh", "shot").toFile().getName() + ".jpg";
             File outputfile = new File(getUploadFolder(), fileanme);
 
@@ -22,11 +19,20 @@ public class CropUtilImpl implements CropUtil {
                 outputfile.createNewFile();
             }
             ImageIO.write(bi, "jpg", outputfile);
-
             return outputfile;
-        } catch (AWTException e) {
-            e.printStackTrace();
         } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
+    public File crop(int x, int y, int width, int height) {
+        try {
+            Robot robot = new Robot();
+            BufferedImage bi = robot.createScreenCapture(new Rectangle(x, y, width, height));
+            return save(bi);
+        } catch (AWTException e) {
             e.printStackTrace();
         }
         return null;

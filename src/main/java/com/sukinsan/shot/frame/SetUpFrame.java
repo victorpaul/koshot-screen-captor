@@ -14,6 +14,7 @@ import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -125,7 +126,7 @@ public class SetUpFrame extends JFrame implements KeyListener, NativeKeyListener
             popup.add(exitItem);
 
             setUpItem.addActionListener(e -> setVisible(true));
-            cropItem.addActionListener(e-> runCropping());
+            cropItem.addActionListener(e -> runCropping());
             exitItem.addActionListener(e -> System.exit(0));
 
             trayIcon = new TrayIcon(Toolkit.getDefaultToolkit().getImage(getClass().getClassLoader().getResource("tray.png")));
@@ -170,22 +171,28 @@ public class SetUpFrame extends JFrame implements KeyListener, NativeKeyListener
                 }
 
                 @Override
-                public void OnCropArea(int x, int y, int width, int height) {
-                    File file = cropUtil.crop(x, y, width, height);
+                public void OnCropArea(BufferedImage bi, Rectangle rt) {
+                    //File file = cropUtil.crop(x, y, width, height);
                     disposeAllCropFrames();
-                    setClipboard("Cropping is publishing");
-                    pubishUtil.publish(file, new PubishUtil.OnPubish() {
-                        @Override
-                        public void success(String res) {
-                            toast("Url is in your clipboard!");
-                            setClipboard(res);
-                        }
 
-                        @Override
-                        public void fail(String res) {
-                            toast(res);
-                        }
+                    new DrawFrame(rt, bi, gd, pubishUtil, bi1 -> {
+                        setClipboard("Cropped omage is publishing");
+                        File file = cropUtil.save(bi1);
+                        pubishUtil.publish(file, new PubishUtil.OnPubish() {
+                            @Override
+                            public void success(String res) {
+                                toast("Url is in your clipboard!");
+                                setClipboard(res);
+                            }
+
+                            @Override
+                            public void fail(String res) {
+                                toast(res);
+                            }
+                        });
                     });
+
+
                 }
             });
             cropFrames.add(cdf);
