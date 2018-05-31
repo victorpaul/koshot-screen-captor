@@ -31,6 +31,8 @@ public class DrawFrame extends JFrame implements MouseListener, MouseMotionListe
         this.or = or;
 
         drawUI(rt, bi);
+        editBUfferIMage.getGraphics().setPaintMode();
+        editBUfferIMage.getGraphics().drawLine(0, 0, 100, 100);
     }
 
     public static BufferedImage deepCopy(BufferedImage bi) {
@@ -57,8 +59,6 @@ public class DrawFrame extends JFrame implements MouseListener, MouseMotionListe
         doneBtn.setText("Done");
         doneBtn.addActionListener(e -> {
             dispose();
-
-            //Graphics2D cg = bImg.createGraphics();
             or.OnReady(editBUfferIMage);
         });
         doneBtn.setFont(new Font("Arial", Font.PLAIN, 40));
@@ -94,7 +94,8 @@ public class DrawFrame extends JFrame implements MouseListener, MouseMotionListe
     @Override
     public void mouseDragged(MouseEvent e) {
         if (drawMode && mouseIn) {
-            editImage.getGraphics().drawLine(mouseX, mouseY, e.getX(), e.getY());
+            editBUfferIMage.getGraphics().drawLine(mouseX, mouseY, e.getX(), e.getY());
+            editImage.repaint();
             mouseX = e.getX();
             mouseY = e.getY();
         }
@@ -112,7 +113,6 @@ public class DrawFrame extends JFrame implements MouseListener, MouseMotionListe
 
     @Override
     public void mousePressed(MouseEvent e) {
-        editBUfferIMage.getGraphics().setPaintMode();
         drawMode = true;
         mouseX = e.getX();
         mouseY = e.getY();
