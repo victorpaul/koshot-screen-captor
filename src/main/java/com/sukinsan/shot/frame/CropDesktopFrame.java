@@ -1,14 +1,12 @@
 package com.sukinsan.shot.frame;
 
-import com.sukinsan.shot.util.SystemUtils;
-
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 
-public class CropDesktopFrame extends JFrame implements KeyListener, MouseListener, MouseMotionListener {
+public class CropDesktopFrame extends BaseJFrame implements KeyListener, MouseListener, MouseMotionListener {
 
     public interface OnAction {
         void OnCancel();
@@ -57,15 +55,8 @@ public class CropDesktopFrame extends JFrame implements KeyListener, MouseListen
         add(jLabel);
         setComponentZOrder(jLabel, 1);
 
-        setAlwaysOnTop(true);
-        setUndecorated(true); // dis one is important!! Crop by Y will be wrong with top window panel
-        if (SystemUtils.isWindows()) {
-            setBounds(rc);
-        } else {
-            gd.setFullScreenWindow(this);
-        }
+        enterFullScreen(gd);
     }
-
 
     @Override
     public void mousePressed(MouseEvent e) {

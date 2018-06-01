@@ -7,6 +7,9 @@ import org.jnativehook.GlobalScreen;
 import org.jnativehook.NativeHookException;
 import org.jnativehook.keyboard.NativeKeyEvent;
 import org.jnativehook.keyboard.NativeKeyListener;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 import javax.swing.*;
 
@@ -21,15 +24,14 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class SetUpFrame extends JFrame implements KeyListener, NativeKeyListener {
+public class MainFrame extends BaseJFrame implements KeyListener, NativeKeyListener {
     private CropUtil cropUtil;
-    private PubishUtil pubishUtil;
     private SettingsUtil settingsUtil;
-    private Api api;
 
     private List<CropDesktopFrame> cropFrames = new ArrayList<>();
     private TrayIcon trayIcon;
-    private JTextField hostJtext;
+    private JTextField hostJText;
+    private JLabel serverStatus;
     private JCheckBox checkBoxHotKey, checkboxNotification;
 
     private void toast(String message) {
@@ -43,22 +45,37 @@ public class SetUpFrame extends JFrame implements KeyListener, NativeKeyListener
         }
     }
 
-    public SetUpFrame() throws HeadlessException {
+    public MainFrame() throws HeadlessException {
         Logger logger = Logger.getLogger(GlobalScreen.class.getPackage().getName());
         logger.setLevel(Level.WARNING);
         logger.setUseParentHandlers(false);
 
-        //setDefaultCloseOperation(JFrame.ICONIFIED);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         settingsUtil = new SettingsUtilImpl();
-        api = new Api(settingsUtil.getHost());
         cropUtil = new CropUtilImpl();
-        pubishUtil = new PublishUtilImpl(api);
 
         setUpUi();
         pack();
         setVisible(true);
+        ping();
+    }
+
+    private void ping() {
+        serverStatus.setText("(Getting server status)");
+        new Api(settingsUtil.getHost()).ping().enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                serverStatus.setText("(Server is online)");
+                serverStatus.setForeground(Color.GRAY);
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                serverStatus.setText("(Server is offline)");
+                serverStatus.setForeground(Color.RED);
+            }
+        });
     }
 
     private void setUpUi() {
@@ -68,15 +85,23 @@ public class SetUpFrame extends JFrame implements KeyListener, NativeKeyListener
             System.out.println("runCropping() button");
             runCropping();
         });
-        launchButton.setFont(new Font("Arial", Font.PLAIN, 40));
+        uiUtil.styleText(launchButton);
 
-        hostJtext = new JTextField();
-        hostJtext.setText(settingsUtil.getHost());
-        hostJtext.setFont(new Font("Arial", Font.PLAIN, 40));
-        hostJtext.addKeyListener(this);
+        hostJText = new JTextField();
+        hostJText.setText(settingsUtil.getHost());
+        uiUtil.styleText(hostJText);
+        hostJText.addKeyListener(this);
+
+        JButton pingBtn = new JButton();
+        pingBtn.setText("ping");
+        pingBtn.addActionListener(e -> ping());
+        //uiUtil.styleText(pingBtn);
+
+        serverStatus = new JLabel();
+        serverStatus.setText("Server status");
 
         checkBoxHotKey = new JCheckBox();
-        checkBoxHotKey.setText("Crop by holding Ctrl and Alt-Alt twice");
+        checkBoxHotKey.setText("Run by holding Ctrl + Alt Alt");
         checkBoxHotKey.setSelected(settingsUtil.getHotKeyCrop());
         checkBoxHotKey.addChangeListener(e -> {
             setUpHotKeyCrop(checkBoxHotKey.isSelected());
@@ -88,12 +113,24 @@ public class SetUpFrame extends JFrame implements KeyListener, NativeKeyListener
         checkboxNotification.setSelected(settingsUtil.getSHowNotifications());
         checkboxNotification.addChangeListener(e -> settingsUtil.setSHowNotifications(checkboxNotification.isSelected()));
 
+        JPanel topPanel = new JPanel(new FlowLayout());
+        JPanel middlePanel = new JPanel(new FlowLayout());
+        JPanel bottomPanel = new JPanel(new FlowLayout());
+
         Container pane = getContentPane();
-        pane.setLayout(new FlowLayout());
-        pane.add(hostJtext);
-        pane.add(checkBoxHotKey);
-        pane.add(checkboxNotification);
-        pane.add(launchButton);
+        pane.setLayout(new BoxLayout(pane, BoxLayout.Y_AXIS));
+        pane.add(hostJText);
+        pane.add(topPanel);
+        pane.add(middlePanel);
+        pane.add(bottomPanel);
+
+        topPanel.add(serverStatus);
+        topPanel.add(pingBtn);
+
+        middlePanel.add(checkBoxHotKey);
+        middlePanel.add(checkboxNotification);
+
+        bottomPanel.add(launchButton);
 
         setUpHotKeyCrop(settingsUtil.getHotKeyCrop());
         setUpSystemTray();
@@ -178,7 +215,7 @@ public class SetUpFrame extends JFrame implements KeyListener, NativeKeyListener
                     new DrawFrame(rt, bi, gd, bi1 -> {
                         setClipboard("Cropped image is publishing");
                         File file = cropUtil.save(bi1);
-                        pubishUtil.publish(file, new PubishUtil.OnPubish() {
+                        new PublishUtilImpl(new Api(settingsUtil.getHost())).publish(file, new PubishUtil.OnPubish() {
                             @Override
                             public void success(String res) {
                                 toast("Url is in your clipboard!");
@@ -192,7 +229,6 @@ public class SetUpFrame extends JFrame implements KeyListener, NativeKeyListener
                         });
                     });
 
-
                 }
             });
             cropFrames.add(cdf);
@@ -203,8 +239,8 @@ public class SetUpFrame extends JFrame implements KeyListener, NativeKeyListener
     public void keyReleased(KeyEvent e) {
         String[] schemes = {"http", "https"};
         UrlValidator urlValidator = new UrlValidator(schemes);
-        if (urlValidator.isValid(hostJtext.getText())) {
-            settingsUtil.setHost(hostJtext.getText());
+        if (urlValidator.isValid(hostJText.getText())) {
+            settingsUtil.setHost(hostJText.getText());
         }
     }
 

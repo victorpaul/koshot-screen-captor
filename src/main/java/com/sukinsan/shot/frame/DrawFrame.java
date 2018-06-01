@@ -1,7 +1,5 @@
 package com.sukinsan.shot.frame;
 
-import com.sukinsan.shot.util.PubishUtil;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -9,26 +7,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
 
-public class DrawFrame extends JFrame implements MouseListener, MouseMotionListener, KeyListener {
-
-    @Override
-    public void keyTyped(KeyEvent e) {
-    }
-
-    @Override
-    public void keyPressed(KeyEvent e) {
-        System.out.println("e" + e.getKeyCode());
-        if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-            dispose();
-        }
-        if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-            submit();
-        }
-    }
-
-    @Override
-    public void keyReleased(KeyEvent e) {
-    }
+public class DrawFrame extends BaseJFrame implements MouseListener, MouseMotionListener, KeyListener {
 
     public interface OnReady {
         void OnReady(BufferedImage bi);
@@ -47,14 +26,12 @@ public class DrawFrame extends JFrame implements MouseListener, MouseMotionListe
         this.or = or;
 
         drawUI(rt, bi);
-
     }
 
     public static BufferedImage deepCopy(BufferedImage bi) {
         ColorModel cm = bi.getColorModel();
-        boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
         WritableRaster raster = bi.copyData(bi.getRaster().createCompatibleWritableRaster());
-        return new BufferedImage(cm, raster, isAlphaPremultiplied, null);
+        return new BufferedImage(cm, raster, cm.isAlphaPremultiplied(), null);
     }
 
     private void submit() {
@@ -81,10 +58,8 @@ public class DrawFrame extends JFrame implements MouseListener, MouseMotionListe
 
         JButton doneBtn = new JButton();
         doneBtn.setText("Done");
-        doneBtn.addActionListener(e -> {
-            submit();
-        });
-        doneBtn.setFont(new Font("Arial", Font.PLAIN, 40));
+        doneBtn.addActionListener(e -> submit());
+        uiUtil.styleText(doneBtn);
 
         JButton cleanBtn = new JButton();
         cleanBtn.setText("Clean");
@@ -93,14 +68,14 @@ public class DrawFrame extends JFrame implements MouseListener, MouseMotionListe
             editGraphics = editBufferIMage.createGraphics();
             editImage.setIcon(new ImageIcon(editBufferIMage));
         });
-        cleanBtn.setFont(new Font("Arial", Font.PLAIN, 40));
+        uiUtil.styleText(cleanBtn);
 
         JButton closeBtn = new JButton();
         closeBtn.setText("Close");
         closeBtn.addActionListener(e -> {
             dispose();
         });
-        closeBtn.setFont(new Font("Arial", Font.PLAIN, 40));
+        uiUtil.styleText(closeBtn);
 
         getContentPane().setLayout(new FlowLayout());
         JPanel bottomPanel = new JPanel();
@@ -147,16 +122,6 @@ public class DrawFrame extends JFrame implements MouseListener, MouseMotionListe
     }
 
     @Override
-    public void mouseMoved(MouseEvent e) {
-
-    }
-
-    @Override
-    public void mouseClicked(MouseEvent e) {
-
-    }
-
-    @Override
     public void mousePressed(MouseEvent e) {
         drawMode = true;
         mouseX = e.getX();
@@ -178,5 +143,36 @@ public class DrawFrame extends JFrame implements MouseListener, MouseMotionListe
     @Override
     public void mouseExited(MouseEvent e) {
         mouseIn = false;
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        System.out.println("e" + e.getKeyCode());
+        if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+            dispose();
+        }
+        if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+            submit();
+        }
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+
+    }
+
+    @Override
+    public void mouseMoved(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {
+
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+
     }
 }

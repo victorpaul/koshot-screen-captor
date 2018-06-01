@@ -1,6 +1,6 @@
 package com.sukinsan.shot;
 
-import com.sukinsan.shot.frame.SetUpFrame;
+import com.sukinsan.shot.frame.MainFrame;
 
 import javax.swing.*;
 
@@ -18,7 +18,7 @@ public class Main {
         } catch (UnsupportedLookAndFeelException e) {
             e.printStackTrace();
         }
-        new SetUpFrame();
+        new MainFrame();
 
     }
 }

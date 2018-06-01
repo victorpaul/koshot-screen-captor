@@ -30,4 +30,8 @@ public class Api {
                 RequestBody.create(MediaType.parse("image/*"), file));
         return service.publish(filePart);
     }
+
+    public Call<Void> ping() {
+        return service.ping();
+    }
 }
