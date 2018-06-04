@@ -9,7 +9,7 @@ import java.util.Properties;
 public class SettingsUtilImpl implements SettingsUtil {
 
     private final static String
-            DEFAULT_HOST = "http://127.0.0.1/",
+            DEFAULT_HOST = "http://paul.ekreative.com/",
             HOME_FOLDER_NAME = "koshot",
             PROPERTY_HOST = "host",
             PROPERTY_HOT_KEY_RUN = "hotKEyRun",
@@ -74,7 +74,7 @@ public class SettingsUtilImpl implements SettingsUtil {
 
     @Override
     public boolean getHotKeyCrop() {
-        return Boolean.valueOf(props.getProperty(PROPERTY_HOT_KEY_RUN, "false"));
+        return Boolean.valueOf(props.getProperty(PROPERTY_HOT_KEY_RUN, "true"));
     }
 
     @Override

@@ -4,5 +4,9 @@ import javax.swing.*;
 
 public interface UiUtil {
 
-    void styleText(JComponent jComponent);
+    void styleTextBold(JComponent jComponent);
+
+    void styleTextNormal40(JComponent jComponent);
+
+    void styleTextNormal20(JComponent jComponent);
 }

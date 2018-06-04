@@ -85,28 +85,30 @@ public class MainFrame extends BaseJFrame implements KeyListener, NativeKeyListe
             System.out.println("runCropping() button");
             runCropping();
         });
-        uiUtil.styleText(launchButton);
+        uiUtil.styleTextNormal40(launchButton);
 
         hostJText = new JTextField();
         hostJText.setText(settingsUtil.getHost());
-        uiUtil.styleText(hostJText);
+        uiUtil.styleTextNormal40(hostJText);
         hostJText.addKeyListener(this);
 
         JButton pingBtn = new JButton();
         pingBtn.setText("ping");
         pingBtn.addActionListener(e -> ping());
-        //uiUtil.styleText(pingBtn);
+        //uiUtil.styleTextNormal40(pingBtn);
 
         serverStatus = new JLabel();
         serverStatus.setText("Server status");
 
         checkBoxHotKey = new JCheckBox();
-        checkBoxHotKey.setText("Run by holding Ctrl + Alt Alt");
+        checkBoxHotKey.setText("Ctrl + (Alt Alt)");
+        uiUtil.styleTextBold(checkBoxHotKey);
         checkBoxHotKey.setSelected(settingsUtil.getHotKeyCrop());
         checkBoxHotKey.addChangeListener(e -> {
             setUpHotKeyCrop(checkBoxHotKey.isSelected());
             settingsUtil.setHotKeyCrop(checkBoxHotKey.isSelected());
         });
+
 
         checkboxNotification = new JCheckBox();
         checkboxNotification.setText("Show publish notification");
