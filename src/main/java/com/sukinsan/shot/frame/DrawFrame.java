@@ -57,9 +57,9 @@ public class DrawFrame extends BaseJFrame implements MouseListener, MouseMotionL
         setVisible(true);
 
         JButton doneBtn = new JButton();
-        doneBtn.setText("Done");
+        doneBtn.setText("Done\n[Enter]");
         doneBtn.addActionListener(e -> submit());
-        uiUtil.styleText(doneBtn);
+        uiUtil.styleTextNormal20(doneBtn);
 
         JButton cleanBtn = new JButton();
         cleanBtn.setText("Clean");
@@ -68,14 +68,12 @@ public class DrawFrame extends BaseJFrame implements MouseListener, MouseMotionL
             editGraphics = editBufferIMage.createGraphics();
             editImage.setIcon(new ImageIcon(editBufferIMage));
         });
-        uiUtil.styleText(cleanBtn);
+        uiUtil.styleTextNormal20(cleanBtn);
 
         JButton closeBtn = new JButton();
-        closeBtn.setText("Close");
-        closeBtn.addActionListener(e -> {
-            dispose();
-        });
-        uiUtil.styleText(closeBtn);
+        closeBtn.setText("Close\n[Esc]");
+        closeBtn.addActionListener(e -> dispose());
+        uiUtil.styleTextNormal20(closeBtn);
 
         getContentPane().setLayout(new FlowLayout());
         JPanel bottomPanel = new JPanel();
