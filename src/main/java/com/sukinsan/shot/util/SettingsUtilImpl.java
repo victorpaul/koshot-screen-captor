@@ -13,6 +13,7 @@ public class SettingsUtilImpl implements SettingsUtil {
             DEFAULT_HOST = "http://paul.ekreative.com/",
             HOME_FOLDER_NAME = "koshot",
             PROPERTY_HOST = "host",
+            PROPERTY_REDMINE_AUTH = "who_knows",
             PROPERTY_HOT_KEY_RUN = "hotKEyRun",
             PROPERTY_NOTIFICATIONS = "notifications",
             SETTINGS_FILE_NAME = "settings.properties";
@@ -93,6 +94,17 @@ public class SettingsUtilImpl implements SettingsUtil {
     @Override
     public boolean getSHowNotifications() {
         return Boolean.valueOf(props.getProperty(PROPERTY_NOTIFICATIONS, "true"));
+    }
+
+    @Override
+    public void setRedmineAuth(String auth) {
+        props.setProperty(PROPERTY_REDMINE_AUTH, auth);
+        save(props);
+    }
+
+    @Override
+    public String getRedmineAuth() {
+        return props.getProperty(PROPERTY_REDMINE_AUTH, "");
     }
 
     @Override

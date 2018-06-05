@@ -1,12 +1,10 @@
 package com.sukinsan.shot.retrofit;
 
-import com.sukinsan.shot.retrofit.reponse.PublishResponse;
+import com.sukinsan.shot.entity.ShotEntity;
+import com.sukinsan.shot.retrofit.reponse.RedmineUserResponse;
 import okhttp3.MultipartBody;
 import retrofit2.Call;
-import retrofit2.http.GET;
-import retrofit2.http.Multipart;
-import retrofit2.http.POST;
-import retrofit2.http.Part;
+import retrofit2.http.*;
 
 public interface KoShotServerService {
 
@@ -14,6 +12,13 @@ public interface KoShotServerService {
     Call<Void> ping();
 
     @Multipart
-    @POST("/api/publish")
-    Call<PublishResponse> publish(@Part MultipartBody.Part filePart);
+    @POST("/api/shot")
+    Call<ShotEntity> publish(@Header("Authorization") String auth, @Part MultipartBody.Part filePart);
+
+    @GET("https://redmine.ekreative.com/users/current.json")
+    Call<RedmineUserResponse> login(@Header("Authorization") String auth);
+
+    @GET("https://redmine.ekreative.com/users/current.json")
+    Call<RedmineUserResponse> loginCheck(@Header("X-Redmine-API-Key") String apiKey);
+
 }

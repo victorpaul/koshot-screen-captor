@@ -1,7 +1,7 @@
 package com.sukinsan.shot.util;
 
+import com.sukinsan.shot.entity.ShotEntity;
 import com.sukinsan.shot.retrofit.Api;
-import com.sukinsan.shot.retrofit.reponse.PublishResponse;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -18,12 +18,12 @@ public class PublishUtilImpl implements PubishUtil {
     }
 
     @Override
-    public void publish(File file, OnPubish onPubish) {
-        api.publish(file).enqueue(new Callback<PublishResponse>() {
+    public void publish(String auth, File file, OnPubish onPubish) {
+        api.publish(auth, file).enqueue(new Callback<ShotEntity>() {
             @Override
-            public void onResponse(Call<PublishResponse> call, Response<PublishResponse> response) {
+            public void onResponse(Call<ShotEntity> call, Response<ShotEntity> response) {
                 if (response.isSuccessful()) {
-                    onPubish.success(response.body().url);
+                    onPubish.success(response.body().getPublicUrl());
                 } else {
                     try {
                         onPubish.fail(response.errorBody().string());
@@ -35,7 +35,7 @@ public class PublishUtilImpl implements PubishUtil {
             }
 
             @Override
-            public void onFailure(Call<PublishResponse> call, Throwable t) {
+            public void onFailure(Call<ShotEntity> call, Throwable t) {
                 onPubish.fail(t.getMessage());
             }
         });

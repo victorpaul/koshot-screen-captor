@@ -13,6 +13,9 @@ public interface SettingsUtil {
 
     boolean getSHowNotifications();
 
-    String baseAuth(String username, String password);
+    void setRedmineAuth(String auth);
 
+    String getRedmineAuth();
+
+    String baseAuth(String username, String password);
 }

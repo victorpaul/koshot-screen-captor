@@ -1,6 +1,7 @@
 package com.sukinsan.shot.frame;
 
 import com.sukinsan.shot.retrofit.Api;
+import com.sukinsan.shot.retrofit.reponse.RedmineUserResponse;
 import com.sukinsan.shot.util.*;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.jnativehook.GlobalScreen;
@@ -30,8 +31,9 @@ public class MainFrame extends BaseJFrame implements KeyListener, NativeKeyListe
 
     private List<CropDesktopFrame> cropFrames = new ArrayList<>();
     private TrayIcon trayIcon;
-    private JTextField hostJText;
-    private JLabel serverStatus;
+    private JTextField hostJText, redmineLogin;
+    private JPasswordField redminePassword;
+    private JLabel serverStatus, credentialsStatus;
     private JCheckBox checkBoxHotKey, checkboxNotification;
 
     private void toast(String message) {
@@ -59,6 +61,7 @@ public class MainFrame extends BaseJFrame implements KeyListener, NativeKeyListe
         pack();
         setVisible(true);
         ping();
+        checkRedmine();
     }
 
     private void ping() {
@@ -89,7 +92,7 @@ public class MainFrame extends BaseJFrame implements KeyListener, NativeKeyListe
 
         hostJText = new JTextField();
         hostJText.setText(settingsUtil.getHost());
-        uiUtil.styleTextNormal40(hostJText);
+        uiUtil.styleTextNormal20(hostJText);
         hostJText.addKeyListener(this);
 
         JButton pingBtn = new JButton();
@@ -109,33 +112,85 @@ public class MainFrame extends BaseJFrame implements KeyListener, NativeKeyListe
             settingsUtil.setHotKeyCrop(checkBoxHotKey.isSelected());
         });
 
+        redmineLogin = new JTextField();
+        redmineLogin.setText("username");
+        redmineLogin.setToolTipText("password");
+        uiUtil.styleTextNormal20(redmineLogin);
+
+        redminePassword = new JPasswordField();
+        redminePassword.setText("redmine password");
+        uiUtil.styleTextNormal20(redminePassword);
+
+        JButton redmineBtn = new JButton();
+        redmineBtn.setText("Check Redmine");
+        redmineBtn.addActionListener(e -> checkRedmine());
+
+        credentialsStatus = new JLabel();
+        credentialsStatus.setText("(checking redmine status)");
 
         checkboxNotification = new JCheckBox();
         checkboxNotification.setText("Show publish notification");
         checkboxNotification.setSelected(settingsUtil.getSHowNotifications());
         checkboxNotification.addChangeListener(e -> settingsUtil.setSHowNotifications(checkboxNotification.isSelected()));
 
-        JPanel topPanel = new JPanel(new FlowLayout());
-        JPanel middlePanel = new JPanel(new FlowLayout());
+        JPanel hostCheckPAnel = new JPanel(new FlowLayout());
+        JPanel checkBoxesPAnel = new JPanel(new FlowLayout());
+        JPanel redminePanel = new JPanel(new FlowLayout());
         JPanel bottomPanel = new JPanel(new FlowLayout());
 
         Container pane = getContentPane();
         pane.setLayout(new BoxLayout(pane, BoxLayout.Y_AXIS));
         pane.add(hostJText);
-        pane.add(topPanel);
-        pane.add(middlePanel);
+        pane.add(hostCheckPAnel);
+        pane.add(redminePanel);
+        pane.add(credentialsStatus);
+        pane.add(checkBoxesPAnel);
         pane.add(bottomPanel);
 
-        topPanel.add(serverStatus);
-        topPanel.add(pingBtn);
+        hostCheckPAnel.add(serverStatus);
+        hostCheckPAnel.add(pingBtn);
 
-        middlePanel.add(checkBoxHotKey);
-        middlePanel.add(checkboxNotification);
+        redminePanel.add(redmineLogin);
+        redminePanel.add(redminePassword);
+        redminePanel.add(redmineBtn);
+
+        checkBoxesPAnel.add(checkBoxHotKey);
+        checkBoxesPAnel.add(checkboxNotification);
 
         bottomPanel.add(launchButton);
 
         setUpHotKeyCrop(settingsUtil.getHotKeyCrop());
         setUpSystemTray();
+    }
+
+    private void checkRedmine() {
+        String auth = settingsUtil.getRedmineAuth().isEmpty()
+                ? settingsUtil.baseAuth(redmineLogin.getText(), redminePassword.getText())
+                : settingsUtil.getRedmineAuth();
+
+        System.out.println(auth);
+
+        new Api(settingsUtil.getHost()).redmineLogin(auth).enqueue(new Callback<RedmineUserResponse>() {
+            @Override
+            public void onResponse(Call<RedmineUserResponse> call, Response<RedmineUserResponse> response) {
+                if (response.isSuccessful()) {
+                    redminePassword.setText("***");
+                    settingsUtil.setRedmineAuth(auth);
+                    credentialsStatus.setText("(Redmine credentials are OK)");
+                    credentialsStatus.setForeground(Color.GRAY);
+                } else {
+                    settingsUtil.setRedmineAuth("");
+                    credentialsStatus.setText("(Credentials are wrong)");
+                    credentialsStatus.setForeground(Color.RED);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<RedmineUserResponse> call, Throwable t) {
+                credentialsStatus.setText("(Redmine doesn't response)");
+                credentialsStatus.setForeground(Color.RED);
+            }
+        });
     }
 
     private void setUpHotKeyCrop(boolean enable) {
@@ -217,7 +272,7 @@ public class MainFrame extends BaseJFrame implements KeyListener, NativeKeyListe
                     new DrawFrame(rt, bi, gd, bi1 -> {
                         setClipboard("Cropped image is publishing");
                         File file = cropUtil.save(bi1);
-                        new PublishUtilImpl(new Api(settingsUtil.getHost())).publish(file, new PubishUtil.OnPubish() {
+                        new PublishUtilImpl(new Api(settingsUtil.getHost())).publish(settingsUtil.getRedmineAuth(), file, new PubishUtil.OnPubish() {
                             @Override
                             public void success(String res) {
                                 toast("Url is in your clipboard!");
@@ -227,6 +282,7 @@ public class MainFrame extends BaseJFrame implements KeyListener, NativeKeyListe
                             @Override
                             public void fail(String res) {
                                 toast(res);
+                                setClipboard(res);
                             }
                         });
                     });

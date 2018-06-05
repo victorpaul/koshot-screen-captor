@@ -9,5 +9,5 @@ public interface PubishUtil {
         void fail(String res);
     }
 
-    void publish(File file, OnPubish onPubish);
+    void publish(String auth, File file, OnPubish onPubish);
 }

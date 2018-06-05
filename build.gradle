@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'sukinsan'
-version '0.31b'
+version '0.33b'
 
 sourceCompatibility = 1.8
 
