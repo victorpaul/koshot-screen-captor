@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Base64;
 import java.util.Properties;
 
 public class SettingsUtilImpl implements SettingsUtil {
@@ -92,5 +93,12 @@ public class SettingsUtilImpl implements SettingsUtil {
     @Override
     public boolean getSHowNotifications() {
         return Boolean.valueOf(props.getProperty(PROPERTY_NOTIFICATIONS, "true"));
+    }
+
+    @Override
+    public String baseAuth(String username, String password) {
+        String creds = username + ":" + password;
+        String encoding = Base64.getEncoder().encodeToString(creds.getBytes());
+        return String.format("Basic %s", encoding);
     }
 }

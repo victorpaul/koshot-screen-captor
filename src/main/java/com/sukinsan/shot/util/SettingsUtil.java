@@ -13,4 +13,6 @@ public interface SettingsUtil {
 
     boolean getSHowNotifications();
 
+    String baseAuth(String username, String password);
+
 }
